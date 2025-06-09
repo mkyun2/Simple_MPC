@@ -71,8 +71,9 @@ int main() {
   for (int i = 0; i < 10; i++) {
     Eigen::VectorXd error = pred_trans_matrix * state - x_ref;
 
-    opt.computePredInput(error, pred_trans_matrix, pred_state_weight,
-                         pred_input_matrix, pred_input_weight, pred_input);
+    if(!opt.computePredInput(error, pred_trans_matrix, pred_state_weight,
+                         pred_input_matrix, pred_input_weight, pred_input))
+        pred_input = 0.0 * pred_input;
     state = trans_matrix * state + input_matrix * pred_input(0);
     std::cout << "=====State=====" << std::endl;
     std::cout << state << std::endl;
