@@ -23,7 +23,7 @@ void Model::update(Eigen::VectorXd input, double dt) {
                         0, 1, 0, sin(state_(2))*dt, 0,
                         0, 0, 1, 0, dt,
                         0, 0, 0, 1, 0,
-                        0, 0, 0, 0, dt;
+                        0, 0, 0, 0, 1;
   input_matrix_ << 0, 0,
                    0, 0,
                    0, 0,

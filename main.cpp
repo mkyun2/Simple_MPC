@@ -37,7 +37,7 @@ Eigen::VectorXd generate_reference_trajectory(int Np, double dt, int state_num,
 int main() {
   int state_num = 5;
   int ctl_num = 2;
-  int pred_horizon = 10;
+  int pred_horizon = 20;
   int ctl_horizon = 5;
   double dt = 0.05;
   double global_time = 0.0;
@@ -45,7 +45,7 @@ int main() {
   Model robot_model(state_num, ctl_num);
 
   std::vector<Eigen::VectorXd> path = genPath(2.0, 0.05);
-  
+
   robot_model.init(Eigen::VectorXd::Zero(state_num));
   Eigen::VectorXd state = Eigen::VectorXd(state_num);
   Eigen::VectorXd ref = Eigen::VectorXd(state_num);
@@ -93,11 +93,13 @@ int main() {
     Eigen::VectorXd ref_point = getReference(path, state, 0.6);
     // compute predicted Matrix
     std::vector<Model::model> linearizedModels;
-    Eigen::VectorXd pred_ref_points (pred_horizon * state_num);
+    Eigen::VectorXd pred_ref_points(pred_horizon * state_num);
     for (int k = 0; k < pred_horizon; ++k) {
-      linearizedModels.push_back(robot_model.getLinearizedModel(
-        ref_point));
-      pred_ref_points.segment(k*state_num, state_num) = ref_point;
+      Model::model continuous_model = robot_model.getLinearizedModel(ref_point);
+      Model::model discrete_model =
+          robot_model.getDiscretizedModel(continuous_model, 5, dt);
+      linearizedModels.push_back(discrete_model);
+      pred_ref_points.segment(k * state_num, state_num) = ref_point;
     }
     predictor.computePredictionMatrix(linearizedModels);
     Eigen::MatrixXd pred_trans_matrix = predictor.getPredTransMatrix();
