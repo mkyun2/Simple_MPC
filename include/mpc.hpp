@@ -1,9 +1,9 @@
 #include <Eigen/Dense>
+#include "model.hpp"
 class Predictor {
  public:
   Predictor(int state_num, int ctl_num, int pred_horizon, int ctl_horizon);
-  void computePredictionMatrix(Eigen::MatrixXd transition_matrix,
-                               Eigen::MatrixXd input_matrix);
+  void computePredictionMatrix(std::vector<Model::model> models);
   Eigen::MatrixXd getPredTransMatrix();
   Eigen::MatrixXd getPredInputMatrix();
 
@@ -33,7 +33,7 @@ class Optimizer {
     float penalty;
   };
   void addIneqConstraint(int N, int n_u, Eigen::VectorXd u_min,
-    Eigen::VectorXd u_max, float penalty);
+                         Eigen::VectorXd u_max, float penalty);
   bool computePredInput(Eigen::MatrixXd pred_state,
                         Eigen::MatrixXd pred_state_matrix,
                         Eigen::MatrixXd pred_state_weight,
@@ -41,6 +41,7 @@ class Optimizer {
                         Eigen::MatrixXd pred_input_weight,
                         Eigen::VectorXd &pred_input);
   bool cholesky_decomposition(Eigen::MatrixXd matrix);
+
  private:
   Eigen::MatrixXd KKT_Matrix_;
   Eigen::MatrixXd A_ineq_;

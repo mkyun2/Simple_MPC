@@ -1,5 +1,4 @@
 #include "mpc.hpp"
-
 #include <iostream>
 
 Predictor::Predictor(int state_num, int ctl_num, int pred_horizon,
@@ -11,10 +10,9 @@ Predictor::Predictor(int state_num, int ctl_num, int pred_horizon,
   pred_state_ = Eigen::VectorXd(pred_horizon_ * state_num_, 1);
   pred_input_ = Eigen::VectorXd(ctl_horizon_ * ctl_num_, 1);
 }
-void Predictor::computePredictionMatrix(Eigen::MatrixXd transition_matrix,
-                                        Eigen::MatrixXd input_matrix) {
+void Predictor::computePredictionMatrix(std::vector<Model::model> models) {
   Eigen::MatrixXd A_pow_trans = Eigen::MatrixXd::Identity(
-      transition_matrix.rows(), transition_matrix.cols());
+      models[0].transition_matrix.rows(), models[0].transition_matrix.cols());
 
   pred_trans_matrix_ =
       Eigen::MatrixXd::Zero(pred_horizon_ * state_num_, state_num_);
@@ -22,26 +20,26 @@ void Predictor::computePredictionMatrix(Eigen::MatrixXd transition_matrix,
                                              ctl_horizon_ * ctl_num_);
   // 2x3 3x3
   for (int i = 0; i < pred_horizon_; i++) {
-    A_pow_trans *= transition_matrix;
+    A_pow_trans *= models[i].transition_matrix;
     pred_trans_matrix_.block(state_num_ * i, 0, state_num_, state_num_) =
         A_pow_trans;
 
     for (int j = 0; j < ctl_horizon_; j++) {
       Eigen::MatrixXd A_pow_ctl = Eigen::MatrixXd::Identity(
-          transition_matrix.rows(), transition_matrix.cols());
+        models[0].transition_matrix.rows(), models[0].transition_matrix.cols());
       if (j > i) break;
-      for (int k = 0; k < i - j - 1; k++) {
-        A_pow_ctl *= transition_matrix;
+      for (int k = 0; k < i - j; k++) {
+        A_pow_ctl *= models[k].transition_matrix;
       }
       pred_input_matrix_.block(state_num_ * i, ctl_num_ * j, state_num_,
-                               ctl_num_) = A_pow_ctl * input_matrix;
+                               ctl_num_) = A_pow_ctl * models[j].input_matrix;
     }
   }
 
-  std::cout << "pred_trans_matrix" << std::endl;
-  std::cout << pred_trans_matrix_ << std::endl;
-  std::cout << "pred_input_matrix" << std::endl;
-  std::cout << pred_input_matrix_ << std::endl;
+  // std::cout << "pred_trans_matrix" << std::endl;
+  // std::cout << pred_trans_matrix_ << std::endl;
+  // std::cout << "pred_input_matrix" << std::endl;
+  // std::cout << pred_input_matrix_ << std::endl;
 }
 Eigen::MatrixXd Predictor::getPredTransMatrix() { return pred_trans_matrix_; }
 Eigen::MatrixXd Predictor::getPredInputMatrix() { return pred_input_matrix_; }
