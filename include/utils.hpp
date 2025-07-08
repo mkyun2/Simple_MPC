@@ -22,28 +22,57 @@ inline Eigen::MatrixXd powMatrix(Eigen::MatrixXd Matrix, int n) {
   return res;
 }
 
-inline std::vector<Eigen::VectorXd> genPath(double sim_time, double dt) {
+inline std::vector<Eigen::VectorXd> genPath(std::string &path_type) {
   std::vector<Eigen::VectorXd> path;
   Eigen::VectorXd point(3);
-  int steps = sim_time / dt;
-  // for(int i = 0; i < 20; i++)
-  // {
-  //   point[0] = 2.0*((i+1)/20);
-  //   point[1] = 0.0;
-  //   point[2] = 0.0;
-  //   path.push_back(point);
-  // }
-  for (int i = 0; i < steps; i++) {
-    double t = i * dt;
-    point[0] = 2.0 * cos(t);
-    point[1] = 2.0 * sin(t);
+  double path_length = 2.0 * M_PI;
+  ;
+  double dt = 0.05;
+  int steps = path_length / dt;
 
-    double dx_dt = -2.0 * sin(t);
-    double dy_dt = 2.0 * cos(t);
-    double ref_theta = atan2(dy_dt, dx_dt);
+  if (path_type == "circle") {
+    for (int i = 0; i < steps; i++) {
+      double t = i * dt;
+      point[0] = 2.0 * cos(t);
+      point[1] = 2.0 * sin(t);
 
-    point[2] = ref_theta;
-    path.push_back(point);
+      double dx_dt = -2.0 * sin(t);
+      double dy_dt = 2.0 * cos(t);
+      double ref_theta = atan2(dy_dt, dx_dt);
+
+      point[2] = ref_theta;
+      path.push_back(point);
+    }
+  } else if (path_type == "hallway") {
+    for (int i = 0; i < steps; i++) {
+      double t = i * dt;
+      double dx_dt, dy_dt;
+      if (i < steps / 2) {
+        point[1] = t;
+        dx_dt = 0.0001;
+        dy_dt = 1;
+        point[2] = atan2(dy_dt, dx_dt);
+      } else {
+        point[0] = t - point[1];
+        dx_dt = 1;
+        dy_dt = 0.0001;
+        point[2] = atan2(dy_dt, dx_dt);
+      }
+      path.push_back(point);
+    }
+
+  } else if (path_type == "sin") {
+    for (int i = 0; i < steps; i++) {
+      double t = i * dt;
+      double dx_dt, dy_dt;
+      point[0] = t;
+      point[1] = sin(t);
+
+      dx_dt = 1;
+      dy_dt = cos(t);
+      point[2] = atan2(dy_dt, dx_dt);
+      path.push_back(point);
+    }
   }
   return path;
 }
@@ -68,19 +97,6 @@ inline Eigen::VectorXd getReference(const std::vector<Eigen::VectorXd> &path,
     }
   }
 
-  // Eigen::VectorXd sample_points (state.rows() * sampling_num);
-  // int path_index = 0;
-  // for(int j = 0; j<sampling_num; j++)
-  // {
-  //   Eigen::VectorXd ref_point(5);
-  //   ref_point[0] = path[path_index][0];
-  //   ref_point[1] = path[path_index][1];
-  //   ref_point[2] = path[path_index][2];
-  //   ref_point[3] = 1.0;
-  //   ref_point[4] = atan2(sin(ref_point(2)),cos(ref_point(2)));
-  //   sample_points.segment(j * state.rows(), state.rows())
-  // }
-
   int index_ref = index_min;
   Eigen::VectorXd ref_point(sample_num * state.rows());
 
@@ -96,8 +112,6 @@ inline Eigen::VectorXd getReference(const std::vector<Eigen::VectorXd> &path,
 
     if (index_ref < (size - 1))
       index_ref++;
-    else
-      index_ref = 0;
   }
 
   return ref_point;
