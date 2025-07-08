@@ -1,6 +1,6 @@
 #include "model.hpp"
-#include "utils.hpp"
 
+#include "utils.hpp"
 
 Model::Model(int state_num, int ctl_num)
     : state_num_(state_num), ctl_num_(ctl_num) {
@@ -12,10 +12,7 @@ Model::Model(int state_num, int ctl_num)
 Eigen::MatrixXd Model::getTransMatrix() { return transition_matrix_; }
 Eigen::MatrixXd Model::getInputMatrix() { return input_matrix_; }
 Eigen::VectorXd Model::getState() { return state_; }
-void Model::init(Eigen::VectorXd init_state)
-{
-  state_ = init_state;
-}
+void Model::init(Eigen::VectorXd init_state) { state_ = init_state; }
 void Model::update(Eigen::VectorXd input, double dt) {
   Eigen::VectorXd next_state;
   // clang-format off
@@ -30,10 +27,10 @@ void Model::update(Eigen::VectorXd input, double dt) {
                    dt, 0,
                    0, dt;
   // clang-format on
-  
-  next_state = transition_matrix_ * state_ + input_matrix_ * input;
-  state_ = next_state;
 
+  next_state = transition_matrix_ * state_ + input_matrix_ * input;
+  next_state(2) = atan2(sin(next_state(2)), cos(next_state(2)));
+  state_ = next_state;
 }
 
 void Model::setModel(Eigen::MatrixXd transition_matrix,
@@ -67,22 +64,9 @@ Model::model Model::getDiscretizedModel(const model &model_info, int n,
   Eigen::MatrixXd I = Eigen::MatrixXd::Identity(
       model_info.transition_matrix.rows(), model_info.transition_matrix.cols());
 
-  Eigen::MatrixXd exp = I;
-  for (int i = 1; i <= n; i++) {
-    exp += powMatrix(model_info.transition_matrix, i) / factorial(i);
-  }
-
-  Eigen::MatrixXd discrete_transition_matrix = exp;
-
-  Eigen::MatrixXd discrete_input_matrix = Eigen::MatrixXd(
-      model_info.input_matrix.rows(), model_info.input_matrix.cols());
-  discrete_input_matrix *= 0;
-
-  for (int i = 1; i <= n; i++) {
-    discrete_input_matrix += dt * i / factorial(i) *
-                             powMatrix(model_info.transition_matrix, i - 1) *
-                             model_info.input_matrix;
-  }
+  Eigen::MatrixXd discrete_transition_matrix =
+      I + model_info.transition_matrix * dt;
+  Eigen::MatrixXd discrete_input_matrix = model_info.input_matrix * dt;
 
   model discrete_model = {discrete_transition_matrix, discrete_input_matrix};
   return discrete_model;

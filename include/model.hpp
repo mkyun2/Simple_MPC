@@ -1,12 +1,12 @@
 #include <Eigen/Dense>
 
 class Model {
- public:
+public:
   Model(int state_num, int ctl_num);
   struct model {
     Eigen::MatrixXd transition_matrix;
     Eigen::MatrixXd input_matrix;
-    Eigen::MatrixXd uncertainty_matrix;
+    Eigen::VectorXd uncertainties_term;
   };
   model getLinearizedModel(const Eigen::VectorXd &ref);
   model getDiscretizedModel(const model &model_info, int n, double dt);
@@ -16,9 +16,8 @@ class Model {
   Eigen::MatrixXd getTransMatrix();
   Eigen::MatrixXd getInputMatrix();
   Eigen::VectorXd getState();
-  
 
- private:
+private:
   int state_num_;
   int ctl_num_;
 

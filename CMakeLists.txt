@@ -10,7 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(OUTPUT_DIR ${PROJECT_SOURCE_DIR}/output)
 
 find_package(Eigen3 REQUIRED)
-
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(Python3 COMPONENTS NumPy REQUIRED)
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -34,8 +35,14 @@ target_include_directories(mpc_lib
     PUBLIC ${PROJECT_SOURCE_DIR}/include
 )
 target_include_directories(mpc_lib PUBLIC ${EIGEN3_INCLUDE_DIR})
-target_link_libraries(mpc_lib Eigen3::Eigen)
-
+target_link_libraries(mpc_lib
+  Eigen3::Eigen
+)
+if (Python3_FOUND)
+    message(STATUS "Python 3 found: ${Python3_VERSION}")
+else ()
+    message(FATAL_ERROR "Python 3 not found")
+endif ()
 enable_testing()
 # main을 빌드할 때 라이브러리 링크
 #add_executable(${TARGET} main.cpp)
@@ -45,7 +52,13 @@ set(Simulation
     main.cpp
 )
 add_executable(simulate ${Simulation})
-target_link_libraries(simulate PRIVATE mpc_lib)
+#target_link_libraries(simulate PRIVATE mpc_lib)
+target_link_libraries(simulate
+    mpc_lib
+    Python3::Python
+    Python3::Module
+    Python3::NumPy
+)
 
 
 set(TestFiles
