@@ -11,13 +11,14 @@ Predictor::Predictor(int state_num, int ctl_num, int pred_horizon,
 }
 std::vector<Eigen::MatrixXd>
 Predictor::buildWeightMatrix(Eigen::VectorXd state_weight,
-                             Eigen::VectorXd input_weight) {
+                             Eigen::VectorXd input_weight,
+                             Eigen::VectorXd final_state_weight) {
   Eigen::MatrixXd pred_state_weight = Eigen::MatrixXd::Identity(
       pred_horizon_ * state_num_, pred_horizon_ * state_num_);
   Eigen::MatrixXd pred_input_weight = Eigen::MatrixXd::Identity(
       ctl_horizon_ * ctl_num_, ctl_horizon_ * ctl_num_);
 
-  for (int i = 0; i < pred_horizon_; i++) {
+  for (int i = 0; i < pred_horizon_ - 1; i++) {
     pred_state_weight.block(i * state_num_ + 0, i * state_num_ + 0, 1, 1) *=
         state_weight[0];
     pred_state_weight.block(i * state_num_ + 1, i * state_num_ + 1, 1, 1) *=
@@ -29,7 +30,21 @@ Predictor::buildWeightMatrix(Eigen::VectorXd state_weight,
     pred_state_weight.block(i * state_num_ + 4, i * state_num_ + 4, 1, 1) *=
         state_weight[4];
   }
-
+  pred_state_weight.block((pred_horizon_ - 1) * state_num_ + 0,
+                          (pred_horizon_ - 1) * state_num_ + 0, 1, 1) *=
+      final_state_weight[0];
+  pred_state_weight.block((pred_horizon_ - 1) * state_num_ + 1,
+                          (pred_horizon_ - 1) * state_num_ + 1, 1, 1) *=
+      final_state_weight[1];
+  pred_state_weight.block((pred_horizon_ - 1) * state_num_ + 2,
+                          (pred_horizon_ - 1) * state_num_ + 2, 1, 1) *=
+      final_state_weight[2];
+  pred_state_weight.block((pred_horizon_ - 1) * state_num_ + 3,
+                          (pred_horizon_ - 1) * state_num_ + 3, 1, 1) *=
+      final_state_weight[3];
+  pred_state_weight.block((pred_horizon_ - 1) * state_num_ + 4,
+                          (pred_horizon_ - 1) * state_num_ + 4, 1, 1) *=
+      final_state_weight[4];
   for (int i = 0; i < ctl_horizon_; i++) {
     pred_input_weight.block(i * ctl_num_ + 0, i * ctl_num_ + 0, 1, 1) *=
         input_weight[0];

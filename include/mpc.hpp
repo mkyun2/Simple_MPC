@@ -8,8 +8,9 @@ public:
                                        Eigen::VectorXd x_ref);
   Eigen::MatrixXd getPredTransMatrix();
   Eigen::MatrixXd getPredInputMatrix();
-  std::vector<Eigen::MatrixXd> buildWeightMatrix(Eigen::VectorXd state_weight,
-                                                 Eigen::VectorXd input_weight);
+  std::vector<Eigen::MatrixXd>
+  buildWeightMatrix(Eigen::VectorXd state_weight, Eigen::VectorXd input_weight,
+                    Eigen::VectorXd final_state_weight);
 
 private:
   int state_num_;
