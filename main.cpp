@@ -1,11 +1,16 @@
 #include <matplotlibcpp.h>
 
-#include <iostream>
-
 #include "mpc.hpp"
 #include "utils.hpp"
+#include <iostream>
+#include <string>
 namespace plt = matplotlibcpp;
-int main() {
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    std::cout << "select one of path_types(circle, hallway, sin)" << std::endl;
+    return 1;
+  }
+  std::cout << "selected path type: " << argv[argc - 1] << std::endl;
   int state_num = 5;
   int ctl_num = 2;
   int pred_horizon = 20;
@@ -21,7 +26,7 @@ int main() {
   Eigen::VectorXd ref = Eigen::VectorXd(state_num);
   state = robot.getState();
 
-  std::string path_type = "sin";
+  std::string path_type = argv[argc-1];
   std::vector<Eigen::VectorXd> path = genPath(path_type);
   std::vector<double> x, y;
   std::vector<double> sx, sy;
@@ -110,7 +115,7 @@ int main() {
       rx.push_back(ref_point.segment(p * state_num, state_num)[0]);
       ry.push_back(ref_point.segment(p * state_num, state_num)[1]);
     }
-    
+
     robot.update(pred_input.segment(0, ctl_num), dt);
     state = robot.getState();
     global_time += dt;
