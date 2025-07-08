@@ -21,7 +21,7 @@ int main() {
   Eigen::VectorXd ref = Eigen::VectorXd(state_num);
   state = robot.getState();
 
-  std::string path_type = "hallway";
+  std::string path_type = "sin";
   std::vector<Eigen::VectorXd> path = genPath(path_type);
   std::vector<double> x, y;
   std::vector<double> sx, sy;
@@ -114,7 +114,7 @@ int main() {
     robot.update(pred_input.segment(0, ctl_num), dt);
     state = robot.getState();
     global_time += dt;
-    
+
     std::cout << "===== Time: " << global_time << " s =====" << std::endl;
     std::cout << "Current State:\n" << state.transpose() << std::endl;
     std::cout << "Reference State (1st step):\n"
