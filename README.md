@@ -30,8 +30,8 @@ make or cmake --build .
 ./simulate circle
 
 # run simulation with hallway path
-./simulation hallway
+./simulate hallway
 
 # run simulation with sine wave path
-./simulation sin
+./simulate sin
 ```
