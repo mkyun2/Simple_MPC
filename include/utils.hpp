@@ -4,15 +4,14 @@
 
 inline double factorial(int n) {
   int res = 1;
-  for (int i = 0; i < n; i++) {
+  for (int i = n; i > 0; i--) {
     res *= i;
   }
   return res;
 }
 inline Eigen::MatrixXd powMatrix(Eigen::MatrixXd Matrix, int n) {
-  Eigen::MatrixXd res = Matrix;
+  Eigen::MatrixXd res = Eigen::MatrixXd::Identity(Matrix.rows(), Matrix.cols());;
   if (n == 0) {
-    res = Eigen::MatrixXd::Identity(Matrix.rows(), Matrix.cols());
     return res;
   }
 

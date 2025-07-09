@@ -64,10 +64,25 @@ Model::model Model::getDiscretizedModel(const model &model_info, int n,
   Eigen::MatrixXd I = Eigen::MatrixXd::Identity(
       model_info.transition_matrix.rows(), model_info.transition_matrix.cols());
 
-  Eigen::MatrixXd discrete_transition_matrix =
-      I + model_info.transition_matrix * dt;
-  Eigen::MatrixXd discrete_input_matrix = model_info.input_matrix * dt;
+  Eigen::MatrixXd exp = I;
+  double T = 1.0;
+  for (int i = 1; i <= n; i++) {
+    T *= dt;
+    exp += powMatrix(model_info.transition_matrix, i) * T / factorial(i);
+  }
 
+  Eigen::MatrixXd discrete_transition_matrix = exp;
+
+  Eigen::MatrixXd discrete_input_matrix = Eigen::MatrixXd(
+      model_info.input_matrix.rows(), model_info.input_matrix.cols());
+  discrete_input_matrix *= 0;
+  T = 1.0;
+  for (int i = 1; i <= n; i++) {
+    T *= dt;
+    discrete_input_matrix += T / factorial(i) *
+                             powMatrix(model_info.transition_matrix, i - 1) *
+                             model_info.input_matrix;
+  }
   model discrete_model = {discrete_transition_matrix, discrete_input_matrix};
   return discrete_model;
 }
